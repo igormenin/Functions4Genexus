@@ -1,0 +1,226 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
+using Artech.Architecture.Common.Objects;
+using Artech.Architecture.UI.Framework.Services;
+using Artech.Genexus.Common.Objects;
+using Artech.Genexus.Common.Parts;
+using Func4Genexus.Logic;
+using Func4Genexus.Store;
+
+namespace Func4Genexus.UI
+{
+    public class SdtManagerForm : Form
+    {
+        private Transaction _transaction;
+        private SdtTrackingStore _store;
+        private SdtGeneratorService _service;
+        
+        private TreeView treeViewTrn;
+        private TextBox txtSdtName;
+        private Button btnSave;
+        private Button btnCancel;
+        private ComboBox cmbExistingSdts;
+        private Label lblName;
+        private Label lblExisting;
+
+        public SdtManagerForm(Transaction transaction)
+        {
+            _transaction = transaction;
+            _store = new SdtTrackingStore();
+            _service = new SdtGeneratorService();
+            InitializeComponent();
+            this.Text = $"Gerenciar SDT para: {_transaction.Name}";
+            
+            LoadExistingSdts();
+            PopulateTreeView();
+        }
+
+        private void InitializeComponent()
+        {
+            this.treeViewTrn = new TreeView();
+            this.txtSdtName = new TextBox();
+            this.btnSave = new Button();
+            this.btnCancel = new Button();
+            this.cmbExistingSdts = new ComboBox();
+            this.lblName = new Label();
+            this.lblExisting = new Label();
+
+            this.SuspendLayout();
+
+            this.lblExisting.Text = "SDT Existente (Atualizar):";
+            this.lblExisting.Location = new Point(12, 15);
+            this.lblExisting.AutoSize = true;
+
+            this.cmbExistingSdts.Location = new Point(160, 12);
+            this.cmbExistingSdts.Size = new Size(250, 21);
+            this.cmbExistingSdts.DropDownStyle = ComboBoxStyle.DropDownList;
+            this.cmbExistingSdts.SelectedIndexChanged += CmbExistingSdts_SelectedIndexChanged;
+
+            this.lblName.Text = "Nome do Novo SDT:";
+            this.lblName.Location = new Point(12, 45);
+            this.lblName.AutoSize = true;
+
+            this.txtSdtName.Location = new Point(160, 42);
+            this.txtSdtName.Size = new Size(250, 20);
+
+            this.treeViewTrn.Location = new Point(15, 80);
+            this.treeViewTrn.Size = new Size(395, 300);
+            this.treeViewTrn.CheckBoxes = true;
+            this.treeViewTrn.AfterCheck += TreeViewTrn_AfterCheck;
+
+            this.btnSave.Text = "Salvar SDT";
+            this.btnSave.Location = new Point(230, 390);
+            this.btnSave.Size = new Size(90, 30);
+            this.btnSave.Click += BtnSave_Click;
+
+            this.btnCancel.Text = "Cancelar";
+            this.btnCancel.Location = new Point(325, 390);
+            this.btnCancel.Size = new Size(85, 30);
+            this.btnCancel.Click += (s, e) => this.Close();
+
+            this.ClientSize = new Size(425, 435);
+            this.Controls.Add(this.lblExisting);
+            this.Controls.Add(this.cmbExistingSdts);
+            this.Controls.Add(this.lblName);
+            this.Controls.Add(this.txtSdtName);
+            this.Controls.Add(this.treeViewTrn);
+            this.Controls.Add(this.btnSave);
+            this.Controls.Add(this.btnCancel);
+            
+            this.Name = "SdtManagerForm";
+            this.StartPosition = FormStartPosition.CenterParent;
+            this.ResumeLayout(false);
+            this.PerformLayout();
+        }
+
+        private void TreeViewTrn_AfterCheck(object sender, TreeViewEventArgs e)
+        {
+            // Optional: Auto-check/uncheck children if desired
+            // For now, let the user check what they want explicitly.
+        }
+
+        private void LoadExistingSdts()
+        {
+            cmbExistingSdts.Items.Clear();
+            cmbExistingSdts.Items.Add("<Criar Novo SDT>");
+            
+            var sdtGuids = _store.GetSdtsForTransaction(_transaction.Guid);
+            foreach (var guid in sdtGuids)
+            {
+                var sdt = UIServices.KB.CurrentModel.Objects.Get(guid) as SDT;
+                if (sdt != null)
+                {
+                    cmbExistingSdts.Items.Add(new SdtComboItem { Sdt = sdt, DisplayName = sdt.Name });
+                }
+            }
+            cmbExistingSdts.SelectedIndex = 0;
+        }
+
+        private void CmbExistingSdts_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbExistingSdts.SelectedIndex > 0)
+            {
+                txtSdtName.Enabled = false;
+                var item = cmbExistingSdts.SelectedItem as SdtComboItem;
+                txtSdtName.Text = item.Sdt.Name;
+            }
+            else
+            {
+                txtSdtName.Enabled = true;
+                txtSdtName.Text = "";
+            }
+        }
+
+        private void PopulateTreeView()
+        {
+            treeViewTrn.Nodes.Clear();
+            var rootNode = CreateLevelNode(_transaction.Structure.Root);
+            rootNode.ExpandAll();
+            treeViewTrn.Nodes.Add(rootNode);
+        }
+
+        private TreeNode CreateLevelNode(TransactionLevel level)
+        {
+            TreeNode levelNode = new TreeNode(level.Name);
+            levelNode.Tag = level;
+            levelNode.Checked = true;
+
+            foreach (var attr in level.Attributes)
+            {
+                TreeNode attrNode = new TreeNode(attr.Attribute.Name);
+                attrNode.Tag = attr.Attribute;
+                attrNode.Checked = true;
+                levelNode.Nodes.Add(attrNode);
+            }
+
+            foreach (var subLevel in level.Levels)
+            {
+                levelNode.Nodes.Add(CreateLevelNode(subLevel));
+            }
+
+            return levelNode;
+        }
+
+        private void BtnSave_Click(object sender, EventArgs e)
+        {
+            var selectedItem = cmbExistingSdts.SelectedItem as SdtComboItem;
+            SDT existingSdt = selectedItem?.Sdt;
+            
+            string sdtName = txtSdtName.Text.Trim();
+            if (existingSdt == null && string.IsNullOrEmpty(sdtName))
+            {
+                MessageBox.Show("Por favor, insira um nome para o novo SDT.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            HashSet<string> selectedAttributes = new HashSet<string>();
+            HashSet<string> selectedLevels = new HashSet<string>();
+
+            CollectCheckedNodes(treeViewTrn.Nodes, selectedAttributes, selectedLevels);
+
+            try
+            {
+                var sdt = _service.CreateOrUpdateSdt(_transaction, existingSdt, sdtName, selectedAttributes, selectedLevels);
+                if (existingSdt == null)
+                {
+                    _store.LinkSdtToTransaction(_transaction.Guid, sdt.Guid);
+                }
+
+                MessageBox.Show("SDT salvo com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao salvar SDT: " + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void CollectCheckedNodes(TreeNodeCollection nodes, HashSet<string> attrs, HashSet<string> levels)
+        {
+            foreach (TreeNode node in nodes)
+            {
+                if (node.Checked)
+                {
+                    if (node.Tag is TransactionLevel)
+                    {
+                        levels.Add(node.Text);
+                    }
+                    else if (node.Tag is Artech.Genexus.Common.Objects.Attribute)
+                    {
+                        attrs.Add(node.Text);
+                    }
+                }
+                CollectCheckedNodes(node.Nodes, attrs, levels);
+            }
+        }
+
+        private class SdtComboItem
+        {
+            public SDT Sdt { get; set; }
+            public string DisplayName { get; set; }
+            public override string ToString() => DisplayName;
+        }
+    }
+}

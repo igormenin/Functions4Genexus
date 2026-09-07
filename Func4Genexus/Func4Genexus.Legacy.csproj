@@ -1,0 +1,82 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>Func4Genexus</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <BaseIntermediateOutputPath>obj\Legacy\</BaseIntermediateOutputPath>
+    <OutputPath>bin\Legacy\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GeneXusPath Condition="'$(GeneXusPath)'==''">C:\GeneXus\Gx18U13_WWP16.08</GeneXusPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Artech.Common.Framework">
+      <HintPath>$(GeneXusPath)\Artech.Common.Framework.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Artech.Udm.Framework">
+      <HintPath>$(GeneXusPath)\Artech.Udm.Framework.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Artech.Common.Helpers">
+      <HintPath>$(GeneXusPath)\Artech.Common.Helpers.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Artech.Common.Properties">
+      <HintPath>$(GeneXusPath)\Artech.Common.Properties.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Artech.Architecture.Common">
+      <HintPath>$(GeneXusPath)\Artech.Architecture.Common.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Artech.Architecture.UI.Framework">
+      <HintPath>$(GeneXusPath)\Artech.Architecture.UI.Framework.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Artech.Genexus.Common">
+      <HintPath>$(GeneXusPath)\Artech.Genexus.Common.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Artech.UINative">
+      <HintPath>$(GeneXusPath)\Artech.UINative.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  <Reference Include="Artech.Common"><HintPath>$(GeneXusPath)\Artech.Common.dll</HintPath><Private>False</Private></Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(GeneXusPath)\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  <Reference Include="Artech.Common"><HintPath>$(GeneXusPath)\Artech.Common.dll</HintPath><Private>False</Private></Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Design" />
+  <Reference Include="Artech.Common"><HintPath>$(GeneXusPath)\Artech.Common.dll</HintPath><Private>False</Private></Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Func4Genexus.catalog">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  <Reference Include="Artech.Common"><HintPath>$(GeneXusPath)\Artech.Common.dll</HintPath><Private>False</Private></Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Func4Genexus.package">
+      <LogicalName>Func4Genexus.Func4Genexus.package</LogicalName>
+          </EmbeddedResource>
+  </ItemGroup>
+</Project>
+
+
+
+
+

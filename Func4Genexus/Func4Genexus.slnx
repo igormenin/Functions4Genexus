@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Func4Genexus.Legacy.csproj" />
+  <Project Path="Func4Genexus.Modern.csproj" />
+</Solution>
