@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Artech.Architecture.Common.Objects;
@@ -36,6 +36,9 @@ namespace Func4Genexus
                 new CommandKey(Id, "Sobre o Func4Genexus"),
                 ExecuteAbout,
                 QueryAbout);
+
+            // Verifica se há novas versões disponíveis no GitHub em segundo plano
+            Func4Genexus.Services.UpdateCheckerService.CheckForUpdatesInBackground();
         }
 
         private static bool QueryAbout(CommandData data, ref CommandStatus status)
