@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Catalog xmlns="http://schemas.genexus.com/IDE/Catalog">
+    <Package id="4b574246-86c4-4b53-8d02-4fc93f9de27f" class="Func4Genexus.SdtGeneratorPackage" assembly="Func4Genexus_GX18_U1_to_U13">
+        <CommandTable>
+            <Command id="GenerateSDTCommand" package="4b574246-86c4-4b53-8d02-4fc93f9de27f">
+                <Properties>
+                    <Property name="name" value="Gerar/Gerenciar SDT..."/>
+                    <Property name="description" value="Cria ou atualiza um SDT a partir desta transação"/>
+                </Properties>
+            </Command>
+        </CommandTable>
+        <MenuTable>
+            <Menu id="FolderViewContextMenu">
+                <Command refid="GenerateSDTCommand" />
+            </Menu>
+            <Menu id="ObjectContextMenu">
+                <Command refid="GenerateSDTCommand" />
+            </Menu>
+        </MenuTable>
+    </Package>
+</Catalog>

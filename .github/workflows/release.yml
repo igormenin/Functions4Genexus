@@ -1,0 +1,56 @@
+name: Deploy Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publicar Release no GitHub
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositorio
+        uses: actions/checkout@v4
+
+      - name: Verificar arquivos de distribuicao
+        id: check_dist
+        run: |
+          echo "Verificando arquivos em dist/..."
+          ls -la dist/ || true
+          if [ -f "dist/Func4Genexus_GX18_U1_to_U13.zip" ] && [ -f "dist/Func4Genexus_GX18_U14plus.zip" ]; then
+            echo "has_assets=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_assets=false" >> $GITHUB_OUTPUT
+            echo "Aviso: Arquivos zip nao encontrados em dist/. Certifique-se de executar o build.ps1 antes de criar a tag."
+          fi
+
+      - name: Criar Release no GitHub
+        uses: softprops/action-gh-release@v2
+        if: steps.check_dist.outputs.has_assets == 'true'
+        with:
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## Func4Genexus - Release ${{ github.ref_name }}
+
+            Extensões prontas para instalação no GeneXus 18:
+
+            ### 📦 Downloads Disponíveis
+            - **`Func4Genexus_GX18_U1_to_U13.zip`**: Compatível com **GeneXus 18 Upgrade 1 até Upgrade 13**.
+            - **`Func4Genexus_GX18_U14plus.zip`**: Compatível com **GeneXus 18 Upgrade 14 ou superior**.
+
+            ### 🛠️ Instruções de Instalação
+            1. Baixe o arquivo `.zip` correspondente à versão do seu GeneXus.
+            2. Extraia o conteúdo (a DLL e o arquivo `.catalog`) na pasta `Packages` da instalação do GeneXus (exemplo: `C:\GeneXus\Gx18\Packages\`).
+            3. Feche e reabra o GeneXus (ou execute `GeneXus.exe /install` se necessário).
+          files: |
+            dist/Func4Genexus_GX18_U1_to_U13.zip
+            dist/Func4Genexus_GX18_U14plus.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true

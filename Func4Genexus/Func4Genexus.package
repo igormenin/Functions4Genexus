@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.genexus.com/addin/v1.0"
+         id="4b574246-86c4-4b53-8d02-4fc93f9de27f"
+         name="Func4Genexus">
+  <PropertiesDefinition>
+    <PropertyDefinition id="Func4Genexus_SDTs" type="string" default="" />
+  </PropertiesDefinition>
+  <Objects>
+    <Object type="00000000-0000-0000-0000-000000000008">
+      <Properties>
+        <Property refid="Func4Genexus_SDTs" />
+      </Properties>
+    </Object>
+  </Objects>
+  <Commands>
+    <CommandDefinition id="Gerar ou Gerenciar SDT" context="selection" />
+    <CommandDefinition id="Sobre o Func4Genexus" />
+  </Commands>
+  <Groups>
+    <Group id="Func4GenexusContextMenuGroup">
+      <Command refid="Gerar ou Gerenciar SDT" />
+    </Group>
+    <Group id="Func4GenexusMainMenuGroup">
+      <Command refid="Gerar ou Gerenciar SDT" />
+      <Command refid="Sobre o Func4Genexus" />
+    </Group>
+    <Group refid="KBObjectGrp" package="98121D96-A7D8-468b-9310-B1F468F812AE">
+      <Popup id="Func4GenexusContextPopup" name="Func4Genexus">
+        <Group refid="Func4GenexusContextMenuGroup" />
+      </Popup>
+    </Group>
+  </Groups>
+  <Menus>
+    <Menu type="menubar">
+      <Popup id="Func4GenexusMainMenuPopup" name="Func4Genexus" insertBefore="Help">
+        <Group refid="Func4GenexusMainMenuGroup" />
+      </Popup>
+    </Menu>
+  </Menus>
+</Package>

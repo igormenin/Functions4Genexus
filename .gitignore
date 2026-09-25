@@ -1,4 +1,4 @@
-﻿# Visual Studio / .NET
+# Visual Studio / .NET
 [Bb]in/
 [Oo]bj/
 [Oo]ut/
@@ -11,4 +11,8 @@
 
 # GeneXus Extensions
 Packages/
-*.package
+# *.package
+
+# Distribution artifacts (track only release zips)
+dist/*
+!dist/*.zip

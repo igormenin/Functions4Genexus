@@ -11,7 +11,7 @@ namespace Func4Genexus.Logic
 {
     public class SdtGeneratorService
     {
-        public SDT CreateOrUpdateSdt(Transaction trn, SDT existingSdt, string sdtName, HashSet<string> selectedAttributes, HashSet<string> selectedLevels)
+        public SDT CreateOrUpdateSdt(Transaction trn, SDT existingSdt, string sdtName, HashSet<string> selectedAttributes, HashSet<string> selectedLevels, KBObject targetLocation = null)
         {
             var kbmodel = trn.Model;
             SDT sdt = existingSdt ?? new SDT(kbmodel);
@@ -19,7 +19,21 @@ namespace Func4Genexus.Logic
             if (existingSdt == null)
             {
                 sdt.Name = sdtName;
-                sdt.Parent = trn.Parent;
+            }
+
+            var loc = targetLocation ?? trn.Parent ?? trn.Module ?? (KBObject)kbmodel.RootModule;
+            if (loc is Folder folder)
+            {
+                sdt.Parent = folder;
+                if (folder.Module != null)
+                {
+                    sdt.Module = folder.Module;
+                }
+            }
+            else if (loc is Module module)
+            {
+                sdt.Parent = module;
+                sdt.Module = module;
             }
 
             // Map root level
@@ -41,13 +55,13 @@ namespace Func4Genexus.Logic
                 var attrName = trnAttr.Attribute.Name;
                 if (selectedAttributes.Contains(attrName))
                 {
-                    SDTItem item = new SDTItem(sdtLevel.SDTStructure);
-                    item.Name = attrName;
-                    
-                    item.Type = eDBType.GX_ATT_REF;
-                    item.AttributeBasedOn = trnAttr.Attribute;
-                    
-                    item.Description = trnAttr.Attribute.Description;
+                    SDTItem item = new SDTItem(sdtLevel.SDTStructure)
+                    {
+                        Name = attrName,
+                        Type = eDBType.GX_ATT_REF,
+                        AttributeBasedOn = trnAttr.Attribute,
+                        Description = trnAttr.Attribute.Description
+                    };
                     sdtLevel.AddItem(item);
                 }
             }
@@ -57,9 +71,11 @@ namespace Func4Genexus.Logic
                 var levelName = subLevel.Name;
                 if (selectedLevels.Contains(levelName))
                 {
-                    SDTLevel newSdtLevel = new SDTLevel(sdtLevel.SDTStructure);
-                    newSdtLevel.Name = levelName;
-                    newSdtLevel.IsCollection = true;
+                    SDTLevel newSdtLevel = new SDTLevel(sdtLevel.SDTStructure)
+                    {
+                        Name = levelName,
+                        IsCollection = true
+                    };
                     sdtLevel.AddLevel(newSdtLevel);
                     
                     PopulateSdtLevel(newSdtLevel, subLevel, selectedAttributes, selectedLevels);

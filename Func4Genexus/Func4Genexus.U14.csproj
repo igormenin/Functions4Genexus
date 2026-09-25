@@ -1,15 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <AssemblyName>Func4Genexus_GX18_U1_to_U13</AssemblyName>
+    <AssemblyName>Func4Genexus_GX18_U14plus</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-    <BaseIntermediateOutputPath>obj\Legacy\</BaseIntermediateOutputPath>
-    <OutputPath>bin\Legacy\</OutputPath>
-    <DefineConstants>$(DefineConstants);GX18_U13</DefineConstants>
+    <BaseIntermediateOutputPath>obj\U14\</BaseIntermediateOutputPath>
+    <OutputPath>bin\U14\</OutputPath>
+    <DefineConstants>$(DefineConstants);GX18_U14</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
+    <GeneXusPath Condition="'$(GeneXusPath)'=='' And Exists('C:\GeneXus\Gx18\U14')">C:\GeneXus\Gx18\U14</GeneXusPath>
     <GeneXusPath Condition="'$(GeneXusPath)'=='' And Exists('C:\GeneXus\Gx18\U13')">C:\GeneXus\Gx18\U13</GeneXusPath>
     <GeneXusPath Condition="'$(GeneXusPath)'==''">C:\GeneXus\Gx18U13_WWP16.08</GeneXusPath>
   </PropertyGroup>
@@ -67,18 +68,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Func4Genexus_Legacy.catalog">
+    <None Include="Func4Genexus_U14.catalog">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Func4Genexus.package">
-      <LogicalName>Func4Genexus_GX18_U1_to_U13.Func4Genexus.package</LogicalName>
+      <LogicalName>Func4Genexus_GX18_U14plus.Func4Genexus.package</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 </Project>
-
-
-
-
-
