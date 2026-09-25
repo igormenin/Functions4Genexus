@@ -10,8 +10,22 @@ namespace Func4Genexus.Services
 {
     public static class UpdateCheckerService
     {
-        public const string CurrentVersionString = "0.1.0";
-        public static readonly Version CurrentVersion = new Version(0, 1, 0);
+        private static readonly Lazy<Version> _currentVersion = new Lazy<Version>(() =>
+        {
+            try
+            {
+                var ver = typeof(UpdateCheckerService).Assembly.GetName().Version;
+                if (ver != null && (ver.Major > 0 || ver.Minor > 0 || ver.Build > 0))
+                {
+                    return new Version(ver.Major, ver.Minor, Math.Max(0, ver.Build));
+                }
+            }
+            catch { }
+            return new Version(0, 2, 0);
+        });
+
+        public static Version CurrentVersion => _currentVersion.Value;
+        public static string CurrentVersionString => $"{CurrentVersion.Major}.{CurrentVersion.Minor}.{CurrentVersion.Build}";
 
         private const string GitHubApiUrl = "https://api.github.com/repos/igormenin/Functions4Genexus/releases/latest";
         private const string GitHubReleasesPage = "https://github.com/igormenin/Functions4Genexus/releases/latest";
