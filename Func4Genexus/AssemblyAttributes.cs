@@ -18,3 +18,4 @@ using Artech.Architecture.Common.Packages;
 [assembly: AssemblyInformationalVersion("0.2.1")]
 
 
+

@@ -6,10 +6,11 @@
     1. Detecta a ultima tag criada no Git local.
     2. Pergunta ao usuario a proxima versao.
     3. Pergunta a descricao do commit e da tag.
-    4. Atualiza AssemblyAttributes.cs com a nova versao na DLL.
-    5. Compila ambos os projetos (GX18 U1-U13 e GX18 U14+).
-    6. Compacta as DLLs e catalogs em arquivos .zip dentro de dist/.
-    7. Faz git commit, cria a tag e envia para o GitHub (acionando o GitHub Actions).
+    4. Compila ambas as versoes (GX18 U1-U13 e GX18 U14+).
+       * Se houver qualquer erro de compilacao, o script interrompe IMEDIATAMENTE,
+         exibe os erros e restaura os arquivos sem gerar ZIP nem fazer commit/tag.
+    5. Se compilado com 100% de sucesso, atualiza AssemblyAttributes.cs e gera os .zip em dist/.
+    6. Faz o git commit, cria a tag e envia para o GitHub.
 #>
 
 [CmdletBinding()]
@@ -35,7 +36,6 @@ Write-Host "==========================================================" -Foregro
 # -----------------------------------------------------------------------------
 $latestTag = ""
 try {
-    # Busca a tag mais recente ordenada por versão
     $allTags = git tag -l --sort=-v:refname
     if ($allTags) {
         $latestTag = ($allTags -split "`r?`n")[0].Trim()
@@ -54,11 +54,10 @@ if ($latestTag) {
 # -----------------------------------------------------------------------------
 if (-not $NextVersion) {
     if ($NonInteractive) {
-        Write-Error "Em modo -NonInteractive, o parametro -NextVersion e obrigatorio."
+        Write-Host "`n[ERRO] Em modo -NonInteractive, o parametro -NextVersion e obrigatorio." -ForegroundColor Red
         exit 1
     }
 
-    # Sugestão básica de incremento de patch se possível
     $suggestedVer = ""
     if ($latestTag -match '^v?(\d+)\.(\d+)\.(\d+)$') {
         $major = [int]$matches[1]
@@ -67,14 +66,14 @@ if (-not $NextVersion) {
         $suggestedVer = "v$major.$minor.$patch"
     }
 
-    $promptText = if ($suggestedVer) { "Informe a proxima versao (ex: $suggestedVer) [Enter para aceitar $suggestedVer]: " } else { "Informe a proxima versao (ex: v0.2.1): " }
+    $promptText = if ($suggestedVer) { "Informe a proxima versao (ex: $suggestedVer) [Enter para $suggestedVer]: " } else { "Informe a proxima versao (ex: v0.2.2): " }
     $userInputVer = Read-Host $promptText
     
     if ([string]::IsNullOrWhiteSpace($userInputVer)) {
         if ($suggestedVer) {
             $NextVersion = $suggestedVer
         } else {
-            Write-Error "Versao nao informada. Operacao cancelada."
+            Write-Host "`n[CANCELADO] Versao nao informada. O processo de release foi cancelado." -ForegroundColor Yellow
             exit 1
         }
     } else {
@@ -82,7 +81,6 @@ if (-not $NextVersion) {
     }
 }
 
-# Padroniza Tag (com 'v') e Versão numérica (sem 'v')
 $tagName = if ($NextVersion.StartsWith("v", [System.StringComparison]::OrdinalIgnoreCase)) { $NextVersion } else { "v$NextVersion" }
 $numericVersion = $tagName.TrimStart('v', 'V')
 $quadVersion = if ($numericVersion -match '^\d+\.\d+\.\d+$') { "$numericVersion.0" } else { $numericVersion }
@@ -103,46 +101,77 @@ if (-not $Description) {
 Write-Host "  -> Descricao: $Description" -ForegroundColor Cyan
 
 # -----------------------------------------------------------------------------
-# 4. Atualizar AssemblyAttributes.cs com a nova versão
+# 4. Atualizar AssemblyAttributes.cs temporariamente para compilação
 # -----------------------------------------------------------------------------
-Write-Host "`n[1/4] Atualizando versao no AssemblyAttributes.cs..." -ForegroundColor Yellow
 $assemblyAttrPath = Join-Path $FuncDir "AssemblyAttributes.cs"
+$originalAssemblyAttrContent = $null
+
 if (Test-Path $assemblyAttrPath) {
-    $content = Get-Content $assemblyAttrPath -Raw
-    $content = [System.Text.RegularExpressions.Regex]::Replace($content, '\[assembly: AssemblyVersion\("[^"]+"\)', "[assembly: AssemblyVersion(`"$quadVersion`")")
-    $content = [System.Text.RegularExpressions.Regex]::Replace($content, '\[assembly: AssemblyFileVersion\("[^"]+"\)', "[assembly: AssemblyFileVersion(`"$quadVersion`")")
-    $content = [System.Text.RegularExpressions.Regex]::Replace($content, '\[assembly: AssemblyInformationalVersion\("[^"]+"\)', "[assembly: AssemblyInformationalVersion(`"$numericVersion`")")
-    Set-Content -Path $assemblyAttrPath -Value $content -Encoding UTF8
-    Write-Host "  -> AssemblyAttributes.cs atualizado com sucesso!" -ForegroundColor Green
+    $originalAssemblyAttrContent = Get-Content $assemblyAttrPath -Raw
+    $newContent = [System.Text.RegularExpressions.Regex]::Replace($originalAssemblyAttrContent, '\[assembly: AssemblyVersion\("[^"]+"\)', "[assembly: AssemblyVersion(`"$quadVersion`")")
+    $newContent = [System.Text.RegularExpressions.Regex]::Replace($newContent, '\[assembly: AssemblyFileVersion\("[^"]+"\)', "[assembly: AssemblyFileVersion(`"$quadVersion`")")
+    $newContent = [System.Text.RegularExpressions.Regex]::Replace($newContent, '\[assembly: AssemblyInformationalVersion\("[^"]+"\)', "[assembly: AssemblyInformationalVersion(`"$numericVersion`")")
+    Set-Content -Path $assemblyAttrPath -Value $newContent -Encoding UTF8
 }
 
 # -----------------------------------------------------------------------------
-# 5. Compilar Projetos
+# 5. Compilar Projetos com Verificação Rigorosa de Erros
 # -----------------------------------------------------------------------------
-Write-Host "`n[2/4] Compilando ambas as versoes em modo Release..." -ForegroundColor Yellow
+Write-Host "`n[1/3] Compilando ambas as versoes em modo Release..." -ForegroundColor Yellow
 
-# Legado
+function Abort-Release([string]$errorMessage, [string]$buildOutput) {
+    Write-Host "`n==========================================================" -ForegroundColor Red
+    Write-Host "                 ERRO NA COMPILACAO!                      " -ForegroundColor Red
+    Write-Host "==========================================================" -ForegroundColor Red
+    Write-Host $errorMessage -ForegroundColor Red
+    
+    if ($buildOutput) {
+        Write-Host "`nDetalhes do erro do compilador:" -ForegroundColor Yellow
+        $errorsOnly = $buildOutput -split "`r?`n" | Where-Object { $_ -match "(error|erro|falha|MSB)" }
+        if ($errorsOnly) {
+            $errorsOnly | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
+        } else {
+            Write-Host $buildOutput -ForegroundColor DarkGray
+        }
+    }
+
+    # Restaura arquivo original de versão para não sujar o Git
+    if ($originalAssemblyAttrContent -and (Test-Path $assemblyAttrPath)) {
+        Set-Content -Path $assemblyAttrPath -Value $originalAssemblyAttrContent -Encoding UTF8
+        Write-Host "`n[REVERTIDO] AssemblyAttributes.cs foi restaurado ao estado anterior." -ForegroundColor Gray
+    }
+
+    Write-Host "`n[INTERROMPIDO] O processo de release foi cancelado com seguranca." -ForegroundColor Yellow
+    Write-Host "Nenhum arquivo zip foi gerado e nenhum commit/tag foi criado." -ForegroundColor Yellow
+    exit 1
+}
+
+# Compilação 1: Legado (GX18 U1 ao U13)
+Write-Host "  -> Compilando GX18 U1 ao U13..." -NoNewline -ForegroundColor White
 $legacyCsproj = Join-Path $FuncDir "Func4Genexus.Legacy.csproj"
-dotnet build $legacyCsproj -c Release --nologo -v quiet
+$buildOutputLegacy = & dotnet build $legacyCsproj -c Release --nologo 2>&1 | Out-String
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Falha na compilacao da versao Legada!"
-    exit $LASTEXITCODE
+    Write-Host " [FALHOU]" -ForegroundColor Red
+    Abort-Release "A compilacao da versao LEGADA (GX18 U1 ao U13) falhou!" $buildOutputLegacy
 }
-Write-Host "  -> GX18 U1 ao U13 compilado com sucesso!" -ForegroundColor Green
+Write-Host " [OK]" -ForegroundColor Green
 
-# U14+
+# Compilação 2: U14+ (GX18 U14 ou superior)
+Write-Host "  -> Compilando GX18 U14+..." -NoNewline -ForegroundColor White
 $u14Csproj = Join-Path $FuncDir "Func4Genexus.U14.csproj"
-dotnet build $u14Csproj -c Release --nologo -v quiet
+$buildOutputU14 = & dotnet build $u14Csproj -c Release --nologo 2>&1 | Out-String
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Falha na compilacao da versao U14+!"
-    exit $LASTEXITCODE
+    Write-Host " [FALHOU]" -ForegroundColor Red
+    Abort-Release "A compilacao da versao U14+ falhou!" $buildOutputU14
 }
-Write-Host "  -> GX18 U14+ compilado com sucesso!" -ForegroundColor Green
+Write-Host " [OK]" -ForegroundColor Green
+
+Write-Host "  -> Ambas as versoes foram compiladas com 100% de sucesso!" -ForegroundColor Green
 
 # -----------------------------------------------------------------------------
-# 6. Gerar Pacotes ZIP em dist/
+# 6. Gerar Pacotes ZIP em dist/ (Apenas após sucesso absoluto na compilação)
 # -----------------------------------------------------------------------------
-Write-Host "`n[3/4] Empacotando arquivos de Release (.zip)..." -ForegroundColor Yellow
+Write-Host "`n[2/3] Empacotando arquivos de Release (.zip)..." -ForegroundColor Yellow
 
 $pkgLegacyDir = Join-Path $DistDir "Func4Genexus_GX18_U1_to_U13"
 $pkgU14Dir    = Join-Path $DistDir "Func4Genexus_GX18_U14plus"
@@ -171,13 +200,13 @@ if (Test-Path $zipU14)    { Remove-Item $zipU14 -Force }
 Compress-Archive -Path "$pkgLegacyDir\*" -DestinationPath $zipLegacy -Force
 Compress-Archive -Path "$pkgU14Dir\*" -DestinationPath $zipU14 -Force
 
-Write-Host "  -> Gerado: $zipLegacy" -ForegroundColor Green
-Write-Host "  -> Gerado: $zipU14" -ForegroundColor Green
+Write-Host "  -> Pacote criado: $zipLegacy" -ForegroundColor Green
+Write-Host "  -> Pacote criado: $zipU14" -ForegroundColor Green
 
 # -----------------------------------------------------------------------------
 # 7. Git Commit, Tag e Deploy para o GitHub
 # -----------------------------------------------------------------------------
-Write-Host "`n[4/4] Preparando Deploy para o GitHub..." -ForegroundColor Yellow
+Write-Host "`n[3/3] Preparando Deploy para o GitHub..." -ForegroundColor Yellow
 
 $confirmPush = $true
 if (-not $NonInteractive) {
