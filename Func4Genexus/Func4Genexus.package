@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.genexus.com/addin/v1.0"
          id="4b574246-86c4-4b53-8d02-4fc93f9de27f"
          name="Func4Genexus">
@@ -15,6 +15,12 @@
   <Commands>
     <CommandDefinition id="Gerar ou Gerenciar SDT" context="selection" />
     <CommandDefinition id="Sobre o Func4Genexus" />
+    <CommandDefinition id="ThemeLight" text="Tema: Claro" />
+    <CommandDefinition id="ThemeDark" text="Tema: Escuro" />
+    <CommandDefinition id="ThemeDracula" text="Tema: Dracula" />
+    <CommandDefinition id="InspectDarkMode" text="Tema escuro: inspecionar controles" />
+    <CommandDefinition id="InspectDarkModeLater" text="Tema escuro: inspecionar em 10 s (diálogos)" />
+    <CommandDefinition id="InspectDarkModePoint" text="Tema escuro: o que está sob o mouse (em 5 s)" />
   </Commands>
   <Groups>
     <Group id="Func4GenexusContextMenuGroup">
@@ -23,6 +29,16 @@
     <Group id="Func4GenexusMainMenuGroup">
       <Command refid="Gerar ou Gerenciar SDT" />
       <Command refid="Sobre o Func4Genexus" />
+    </Group>
+    <Group id="Func4GenexusThemeGroup">
+      <Command refid="ThemeLight" />
+      <Command refid="ThemeDark" />
+      <Command refid="ThemeDracula" />
+    </Group>
+    <Group id="Func4GenexusThemeDiagGroup">
+      <Command refid="InspectDarkMode" />
+      <Command refid="InspectDarkModeLater" />
+      <Command refid="InspectDarkModePoint" />
     </Group>
     <Group refid="KBObjectGrp" package="98121D96-A7D8-468b-9310-B1F468F812AE">
       <Popup id="Func4GenexusContextPopup" name="Func4Genexus">
@@ -34,6 +50,12 @@
     <Menu type="menubar">
       <Popup id="Func4GenexusMainMenuPopup" name="Func4Genexus" insertBefore="Help">
         <Group refid="Func4GenexusMainMenuGroup" />
+        <Popup id="Func4GenexusThemePopup" name="Tema">
+          <Group refid="Func4GenexusThemeGroup" />
+          <Popup id="Func4GenexusThemeDiagPopup" name="Diagnóstico">
+            <Group refid="Func4GenexusThemeDiagGroup" />
+          </Popup>
+        </Popup>
       </Popup>
     </Menu>
   </Menus>

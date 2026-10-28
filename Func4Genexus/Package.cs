@@ -9,6 +9,7 @@ using Artech.Architecture.UI.Framework.Services;
 using Artech.Common.Framework.Commands;
 using Artech.Genexus.Common.Objects;
 using Artech.Architecture.Common.Descriptors;
+using Func4Genexus.Theme;
 using Func4Genexus.UI;
 using System.Collections.Generic;
 
@@ -37,8 +38,67 @@ namespace Func4Genexus
                 ExecuteAbout,
                 QueryAbout);
 
+            AddCommand(
+                new CommandKey(Id, "ThemeLight"),
+                delegate { DarkModeService.SetTheme(ThemePalette.LightName); return true; },
+                QueryTheme("Tema: Claro", () => DarkModeService.CurrentTheme == ThemePalette.LightName));
+
+            AddCommand(
+                new CommandKey(Id, "ThemeDark"),
+                delegate { DarkModeService.SetTheme(ThemePalette.DarkName); return true; },
+                QueryTheme("Tema: Escuro", () => DarkModeService.CurrentTheme == ThemePalette.DarkName));
+
+            AddCommand(
+                new CommandKey(Id, "ThemeDracula"),
+                delegate { DarkModeService.SetTheme(ThemePalette.DraculaName); return true; },
+                QueryTheme("Tema: Dracula", () => DarkModeService.CurrentTheme == ThemePalette.DraculaName));
+
+            AddCommand(
+                new CommandKey(Id, "InspectDarkMode"),
+                delegate { DarkModeService.Inspect(); return true; },
+                QuerySimple("Tema escuro: inspecionar controles"));
+
+            AddCommand(
+                new CommandKey(Id, "InspectDarkModeLater"),
+                delegate { DarkModeService.InspectLater(); return true; },
+                QuerySimple("Tema escuro: inspecionar em 10 s (diálogos)"));
+
+            AddCommand(
+                new CommandKey(Id, "InspectDarkModePoint"),
+                delegate { DarkModeService.InspectPointLater(); return true; },
+                QuerySimple("Tema escuro: o que está sob o mouse (em 5 s)"));
+
+            try
+            {
+                DarkModeService.ApplyAtStartupIfEnabled();
+            }
+            catch
+            {
+            }
+
             // Verifica se há novas versões disponíveis no GitHub em segundo plano
             Func4Genexus.Services.UpdateCheckerService.CheckForUpdatesInBackground();
+        }
+
+        private static QueryHandler QuerySimple(string text)
+        {
+            return delegate(CommandData data, ref CommandStatus status)
+            {
+                status = new CommandStatus(CommandState.Enabled);
+                status.Text = text;
+                return true;
+            };
+        }
+
+        private static QueryHandler QueryTheme(string text, Func<bool> isChecked)
+        {
+            return delegate(CommandData data, ref CommandStatus status)
+            {
+                status = new CommandStatus(CommandState.Enabled);
+                status.Text = text;
+                try { status.Checked = isChecked(); } catch { status.Checked = false; }
+                return true;
+            };
         }
 
         private static bool QueryAbout(CommandData data, ref CommandStatus status)
@@ -64,7 +124,7 @@ namespace Func4Genexus
             return true;
         }
 
-                private static bool ExecuteGenerateSDT(CommandData data)
+        private static bool ExecuteGenerateSDT(CommandData data)
         {
             var trn = TryGetTransactionFromContext(data);
 
@@ -125,6 +185,3 @@ namespace Func4Genexus
         }
     }
 }
-
-
-
