@@ -67,8 +67,9 @@ namespace Func4Genexus.Services
 
         /// <summary>
         /// Executa a verificação. Se silentOnUpToDate for false, exibe mensagem caso já esteja atualizado.
+        /// Retorna true se o usuário foi redirecionado para o site do GitHub.
         /// </summary>
-        public static void PerformCheck(bool silentOnUpToDate)
+        public static bool PerformCheck(bool silentOnUpToDate)
         {
             try
             {
@@ -92,7 +93,7 @@ namespace Func4Genexus.Services
                             MessageBox.Show("Não foi possível verificar atualizações no momento (Código: " + response.StatusCode + ").",
                                 "Func4Genexus - Atualizações", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         }
-                        return;
+                        return false;
                     }
 
                     using (var reader = new StreamReader(response.GetResponseStream()))
@@ -110,7 +111,7 @@ namespace Func4Genexus.Services
                 {
                     if (latestVersion > CurrentVersion)
                     {
-                        NotifyUpdateAvailable(latestVersion, releaseUrl);
+                        return NotifyUpdateAvailable(latestVersion, releaseUrl);
                     }
                     else if (!silentOnUpToDate)
                     {
@@ -140,9 +141,10 @@ namespace Func4Genexus.Services
                         MessageBoxIcon.Warning);
                 }
             }
+            return false;
         }
 
-        private static void NotifyUpdateAvailable(Version latestVersion, string releaseUrl)
+        private static bool NotifyUpdateAvailable(Version latestVersion, string releaseUrl)
         {
             try
             {
@@ -153,7 +155,7 @@ namespace Func4Genexus.Services
                     RecommendedZipName,
                     releaseUrl))
                 {
-                    form.ShowDialog();
+                    return form.ShowDialog() == DialogResult.Yes;
                 }
             }
             catch
@@ -165,8 +167,18 @@ namespace Func4Genexus.Services
 
                 if (MessageBox.Show(msg, "Atualização - Func4Genexus", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
                 {
-                    try { Process.Start(releaseUrl ?? GitHubReleasesPage); } catch { }
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = releaseUrl ?? GitHubReleasesPage,
+                            UseShellExecute = true
+                        });
+                        return true;
+                    }
+                    catch { }
                 }
+                return false;
             }
         }
     }

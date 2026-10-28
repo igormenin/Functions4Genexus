@@ -69,6 +69,9 @@ namespace Func4Genexus.UI
                     });
                 }
                 catch { }
+
+                // Define DialogResult como Yes e fecha o popup imediatamente
+                this.DialogResult = DialogResult.Yes;
                 this.Close();
             };
 
