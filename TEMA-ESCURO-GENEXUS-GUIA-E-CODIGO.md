@@ -1,7 +1,7 @@
 # Tema escuro para a IDE do GeneXus 18 — pacote completo para outro agente
 
 > **Para o agente (Claude) que recebe este arquivo:** este documento é autossuficiente. Ele tem (1) o passo a passo
-> para montar uma extensão (DLL) do GeneXus 18 que troca o tema da IDE (Claro, Escuro ou Dracula), (2) como o tema funciona em cada
+> para montar uma extensão (DLL) do GeneXus 18 que troca o tema da IDE (Claro, Escuro, Dracula, Catppuccin Mocha, Tokyo Night, Nord, Gruvbox Dark, One Dark Pro ou Rosé Pine), (2) como o tema funciona em cada
 > parte da IDE, (3) **o código-fonte completo**, (4) as regras de implementação. Siga a ordem das seções. Não reinvente
 > o que está aqui: copie os arquivos da seção 6, ajuste o namespace e o nome do pacote, compile e teste.
 
@@ -11,17 +11,18 @@ Funciona em GeneXus 18 U11, U12, U15 e U16.
 
 ## 1. O que a extensão faz
 
-- Menu **(seu menu) → Instalação** com seis itens: **Tema: Claro**, **Tema: Escuro** e **Tema: Dracula** (✓ no tema
+- Menu **(seu menu) → Instalação** com doze itens: **Tema: Claro**, **Tema: Escuro**, **Tema: Dracula**, **Tema: Catppuccin Mocha**,
+  **Tema: Tokyo Night**, **Tema: Nord**, **Tema: Gruvbox Dark**, **Tema: One Dark Pro** e **Tema: Rosé Pine** (✓ no tema
   atual), **Tema escuro: inspecionar controles**, **Tema escuro: inspecionar em 10 s (diálogos)** e
   **Tema escuro: o que está sob o mouse (em 5 s)**.
-- Escuro e Dracula são a mesma pintura com **paletas** diferentes (`ThemePalette`): cada cor é pedida pelo papel
-  (moldura, traço, seleção, barra de rolagem...). Trocar entre os dois não exige reiniciar.
+- Escuro, Dracula e os outros 6 temas escuros são a mesma pintura com **paletas** diferentes (`ThemePalette`): cada cor é pedida pelo papel
+  (moldura, traço, seleção, barra de rolagem...). Trocar entre qualquer um deles não exige reiniciar.
 - Tema escuro: escurece tudo que é Infragistics (dock, abas, menus, toolbars, árvore, grid) carregando um `.isl` escuro
   **derivado em memória** do `.isl` Silver da instalação; depois escurece o resto (WinForms, editor Actipro,
   Properties/SmartPropertyGrid, DevExpress, Crownwood, status bar, Output/Monaco, Start Page, editor HTML NetRix,
   barra de título via DWM).
 - Tema Claro: devolve cada cor original guardada. Nada da instalação é gravado/alterado.
-- A escolha fica num arquivo-flag `%LOCALAPPDATA%\<SuaPasta>\darkmode.on` (conteúdo: `Escuro` ou `Dracula`; sem arquivo = Claro) e é
+- A escolha fica num arquivo-flag `%LOCALAPPDATA%\<SuaPasta>\darkmode.on` (conteúdo: `Escuro`, `Dracula`, `Catppuccin Mocha`, `Tokyo Night`, `Nord`, `Gruvbox Dark`, `One Dark Pro` ou `Rosé Pine`; sem arquivo = Claro) e é
   reaplicada no startup.
 - O inspetor grava um relatório `.txt` com a árvore de controles de todas as janelas (tipo, assembly, cores, quem
   pinta, % de área clara medida na tela). É a ferramenta para estender o tema a telas novas (seção 4.5).
@@ -188,24 +189,39 @@ namespace MinhaExtensao
 		internal static readonly CommandKey ThemeLight = new CommandKey(MeuPackage.guid, "ThemeLight");
 		internal static readonly CommandKey ThemeDark = new CommandKey(MeuPackage.guid, "ThemeDark");
 		internal static readonly CommandKey ThemeDracula = new CommandKey(MeuPackage.guid, "ThemeDracula");
+		internal static readonly CommandKey ThemeCatppuccinMocha = new CommandKey(MeuPackage.guid, "ThemeCatppuccinMocha");
+		internal static readonly CommandKey ThemeTokyoNight = new CommandKey(MeuPackage.guid, "ThemeTokyoNight");
+		internal static readonly CommandKey ThemeNord = new CommandKey(MeuPackage.guid, "ThemeNord");
+		internal static readonly CommandKey ThemeGruvboxDark = new CommandKey(MeuPackage.guid, "ThemeGruvboxDark");
+		internal static readonly CommandKey ThemeOneDarkPro = new CommandKey(MeuPackage.guid, "ThemeOneDarkPro");
+		internal static readonly CommandKey ThemeRosePine = new CommandKey(MeuPackage.guid, "ThemeRosePine");
 		internal static readonly CommandKey InspectDarkMode = new CommandKey(MeuPackage.guid, "InspectDarkMode");
 		internal static readonly CommandKey InspectDarkModeLater = new CommandKey(MeuPackage.guid, "InspectDarkModeLater");
 		internal static readonly CommandKey InspectDarkModePoint = new CommandKey(MeuPackage.guid, "InspectDarkModePoint");
 
 		public CommandManager()
 		{
-			AddCommand(ThemeLight, delegate { DarkModeService.SetTheme(ThemePalette.LightName); return true; },
-				QChecked("Tema: Claro", delegate { return DarkModeService.CurrentTheme == ThemePalette.LightName; }));
-			AddCommand(ThemeDark, delegate { DarkModeService.SetTheme(ThemePalette.DarkName); return true; },
-				QChecked("Tema: Escuro", delegate { return DarkModeService.CurrentTheme == ThemePalette.DarkName; }));
-			AddCommand(ThemeDracula, delegate { DarkModeService.SetTheme(ThemePalette.DraculaName); return true; },
-				QChecked("Tema: Dracula", delegate { return DarkModeService.CurrentTheme == ThemePalette.DraculaName; }));
+			AddTheme(ThemeLight, ThemePalette.LightName);
+			AddTheme(ThemeDark, ThemePalette.DarkName);
+			AddTheme(ThemeDracula, ThemePalette.DraculaName);
+			AddTheme(ThemeCatppuccinMocha, ThemePalette.CatppuccinMochaName);
+			AddTheme(ThemeTokyoNight, ThemePalette.TokyoNightName);
+			AddTheme(ThemeNord, ThemePalette.NordName);
+			AddTheme(ThemeGruvboxDark, ThemePalette.GruvboxDarkName);
+			AddTheme(ThemeOneDarkPro, ThemePalette.OneDarkProName);
+			AddTheme(ThemeRosePine, ThemePalette.RosePineName);
 			AddCommand(InspectDarkMode, delegate { DarkModeService.Inspect(); return true; },
 				Q("Tema escuro: inspecionar controles"));
 			AddCommand(InspectDarkModeLater, delegate { DarkModeService.InspectLater(); return true; },
 				Q("Tema escuro: inspecionar em 10 s (diálogos)"));
 			AddCommand(InspectDarkModePoint, delegate { DarkModeService.InspectPointLater(); return true; },
 				Q("Tema escuro: o que está sob o mouse (em 5 s)"));
+		}
+
+		private void AddTheme(CommandKey key, string themeName)
+		{
+			AddCommand(key, delegate { DarkModeService.SetTheme(themeName); return true; },
+				QChecked("Tema: " + themeName, delegate { return string.Equals(DarkModeService.CurrentTheme, themeName, StringComparison.OrdinalIgnoreCase); }));
 		}
 
 		private static QueryHandler Q(string text)
@@ -249,6 +265,12 @@ padrão que a IDE carrega. Para conferir depois do build (PowerShell):
 		<CommandDefinition id="ThemeLight" text="Tema: Claro" />
 		<CommandDefinition id="ThemeDark" text="Tema: Escuro" />
 		<CommandDefinition id="ThemeDracula" text="Tema: Dracula" />
+		<CommandDefinition id="ThemeCatppuccinMocha" text="Tema: Catppuccin Mocha" />
+		<CommandDefinition id="ThemeTokyoNight" text="Tema: Tokyo Night" />
+		<CommandDefinition id="ThemeNord" text="Tema: Nord" />
+		<CommandDefinition id="ThemeGruvboxDark" text="Tema: Gruvbox Dark" />
+		<CommandDefinition id="ThemeOneDarkPro" text="Tema: One Dark Pro" />
+		<CommandDefinition id="ThemeRosePine" text="Tema: Rosé Pine" />
 		<CommandDefinition id="InspectDarkMode" text="Tema escuro: inspecionar controles" />
 		<CommandDefinition id="InspectDarkModeLater" text="Tema escuro: inspecionar em 10 s (diálogos)" />
 		<CommandDefinition id="InspectDarkModePoint" text="Tema escuro: o que está sob o mouse (em 5 s)" />
@@ -258,6 +280,12 @@ padrão que a IDE carrega. Para conferir depois do build (PowerShell):
 			<Command refid="ThemeLight" />
 			<Command refid="ThemeDark" />
 			<Command refid="ThemeDracula" />
+			<Command refid="ThemeCatppuccinMocha" />
+			<Command refid="ThemeTokyoNight" />
+			<Command refid="ThemeNord" />
+			<Command refid="ThemeGruvboxDark" />
+			<Command refid="ThemeOneDarkPro" />
+			<Command refid="ThemeRosePine" />
 			<Command refid="InspectDarkMode" />
 			<Command refid="InspectDarkModeLater" />
 			<Command refid="InspectDarkModePoint" />
@@ -362,27 +390,32 @@ uma do jeito dela. Os componentes e versões são os mesmos em U11, U12, U15 e U
 
 ### 4.0 Temas e paleta (`ThemePalette`)
 
-- Três temas: **Claro** (o original do GeneXus, nada pintado), **Escuro** e **Dracula**. Os dois escuros usam o mesmo
+- Nove temas: **Claro** (o original do GeneXus, nada pintado), **Escuro**, **Dracula**, **Catppuccin Mocha**, **Tokyo Night**, **Nord**, **Gruvbox Dark**, **One Dark Pro** e **Rosé Pine**. Todos os temas escuros usam o mesmo
   código de pintura; só muda a **paleta** (`ThemePalette.Current`). Nenhum pintor usa cor fixa: pede pelo papel.
 - Papéis: `Frame` (moldura: splitters, fundo do painel, área das abas), `Line` (traço: borda fina, separador,
   linha de grade, sublinhado das toolbars), `Raised` (título de painel ativo), `Hover`, `RaisedText`, `Text`,
   `TextDim` (texto desabilitado), `Selection`/`SelectionText`, `Accent`, `ScrollTrack`/`ScrollThumb`/`ScrollArrow`
   e `HtmlCss` (editor HTML).
 
-| Papel | Escuro | Dracula |
-|---|---|---|
-| `Frame` | `38,38,40` | `#191A21` |
-| `Line` | `51,51,55` | `#44475A` |
-| `Raised` / `Hover` | `62,62,66` / `62,62,64` | `#343746` / `#44475A` |
-| `Text` / `TextDim` | fórmula / `128,128,128` | `#F8F8F2` / `#6272A4` |
-| `Selection` / `Accent` | `38,79,120` / `0,122,204` | `#44475A` / `#BD93F9` |
-| Barra de rolagem (trilho/polegar/seta) | `37,37,38` / `85,85,88` / `160` | `#21222C` / `#44475A` / `#6272A4` |
+| Papel | Escuro | Dracula | Catppuccin Mocha | Tokyo Night | Nord | Gruvbox Dark | One Dark Pro | Rosé Pine |
+|---|---|---|---|---|---|---|---|---|
+| `Frame` | `38,38,40` | `#191A21` | `#11111B` | `#16161E` | `#242933` | `#1D2021` | `#1E2227` | `#191724` |
+| `Line` | `51,51,55` | `#44475A` | `#45475A` | `#3B4261` | `#4C566A` | `#504945` | `#3E4451` | `#403D52` |
+| `Raised` / `Hover` | `62,62,66` / `62,62,64` | `#343746` / `#44475A` | `#313244` / `#45475A` | `#292E42` / `#3B4261` | `#434C5E` / `#4C566A` | `#3C3836` / `#504945` | `#323842` / `#3E4451` | `#312F44` / `#403D52` |
+| `Text` / `TextDim` | fórmula / `128,128,128` | `#F8F8F2` / `#6272A4` | `#CDD6F4` / `#6C7086` | `#C0CAF5` / `#565F89` | `#ECEFF4` / `#7B88A1` | `#EBDBB2` / `#928374` | `#ABB2BF` / `#5C6370` | `#E0DEF4` / `#6E6A86` |
+| `Selection` / `Accent` | `38,79,120` / `0,122,204` | `#44475A` / `#BD93F9` | `#45475A` / `#CBA6F7` | `#283457` / `#7AA2F7` | `#434C5E` / `#88C0D0` | `#504945` / `#FE8019` | `#3E4451` / `#61AFEF` | `#403D52` / `#C4A7E7` |
+| Barra de rolagem (trilho/polegar/seta) | `37,37,38` / `85,85,88` / `160` | `#21222C` / `#44475A` / `#6272A4` | `#181825` / `#45475A` / `#6C7086` | `#1A1B26` / `#3B4261` / `#565F89` | `#2E3440` / `#4C566A` / `#7B88A1` | `#282828` / `#504945` / `#928374` | `#21252B` / `#3E4451` / `#5C6370` | `#1F1D2E` / `#403D52` / `#6E6A86` |
 
 - **Escuro:** a fórmula da seção 4.1 (inverte a luminosidade e mantém o matiz).
-- **Dracula** (cores oficiais de draculatheme.com, MIT): mesma luminosidade da fórmula, depois `Tint`: cor quase
-  cinza (saturação HSL < 0,2) vira o ponto da **rampa** de fundos com aquela luminosidade (`#191A21` → `#21222C` →
-  `#282A36` → `#343746` → `#44475A` → `#6272A4` → `#F8F8F2`); cor com matiz vira o **destaque** mais próximo (ciano,
-  verde, laranja, rosa, roxo, vermelho, amarelo) na mesma luminosidade. Texto escuro cinza vira `Text`.
+- **Temas com rampa (`Tinted`)**: mesma luminosidade da fórmula, depois `Tint`: cor quase
+  cinza (saturação HSL < 0,2) vira o ponto da **rampa** de fundos (`_ramp`) com aquela luminosidade; cor com matiz vira o **destaque** (`_accents`) mais próximo na mesma luminosidade. Texto escuro cinza vira `Text`:
+  - **Dracula** (`draculatheme.com`, MIT): rampa `#191A21` → `#21222C` → `#282A36` → `#343746` → `#44475A` → `#6272A4` → `#F8F8F2`; destaques `#8BE9FD`, `#50FA7B`, `#FFB86C`, `#FF79C6`, `#BD93F9`, `#FF5555`, `#F1FA8C`.
+  - **Catppuccin Mocha** (`catppuccin/catppuccin`, MIT): rampa `#11111B` → `#181825` → `#1E1E2E` → `#313244` → `#45475A` → `#6C7086` → `#CDD6F4`; destaques `#89B4FA`, `#94E2D5`, `#A6E3A1`, `#F9E2AF`, `#FAB387`, `#F38BA8`, `#CBA6F7`.
+  - **Tokyo Night** (`folke/tokyonight.nvim`, MIT): rampa `#16161E` → `#1A1B26` → `#24283B` → `#292E42` → `#3B4261` → `#565F89` → `#C0CAF5`; destaques `#7AA2F7`, `#7DCFFF`, `#9ECE6A`, `#E0AF68`, `#FF9E64`, `#F7768E`, `#BB9AF7`.
+  - **Nord** (`nordtheme/nord`, MIT): rampa `#242933` → `#2E3440` → `#3B4252` → `#434C5E` → `#4C566A` → `#7B88A1` → `#ECEFF4`; destaques `#88C0D0`, `#81A1C1`, `#A3BE8C`, `#EBCB8B`, `#D08770`, `#BF616A`, `#B48EAD`.
+  - **Gruvbox Dark** (`morhetz/gruvbox`, MIT): rampa `#1D2021` → `#282828` → `#32302F` → `#3C3836` → `#504945` → `#928374` → `#EBDBB2`; destaques `#8EC07C`, `#B8BB26`, `#FABD2F`, `#FE8019`, `#FB4934`, `#D3869B`, `#83A598`.
+  - **One Dark Pro** (`binaryify/OneDark-Pro`, MIT): rampa `#1E2227` → `#21252B` → `#282C34` → `#323842` → `#3E4451` → `#5C6370` → `#ABB2BF`; destaques `#56B6C2`, `#61AFEF`, `#98C379`, `#E5C07B`, `#D19A66`, `#E06C75`, `#C678DD`.
+  - **Rosé Pine** (`rose-pine/rose-pine-theme`, MIT): rampa `#191724` → `#1F1D2E` → `#26233A` → `#312F44` → `#403D52` → `#6E6A86` → `#E0DEF4`; destaques `#9CCFD8`, `#31748F`, `#F6C177`, `#EBBCBA`, `#EB6F92`, `#C4A7E7`, `#908CAA`.
 - **Trocar** entre dois escuros: `DarkWindows.Stop()` devolve as cores do tema atual, troca `ThemePalette.Current` e
   aplica de novo, sem reiniciar. `darkmode.on` guarda o nome do tema; conteúdo desconhecido vale Escuro.
 - Teste-chave: com a paleta Escuro o `.isl` gerado e as cores dos pintores têm de ser **idênticos** aos da fórmula pura.
@@ -841,6 +874,12 @@ namespace GxPropertiesTool
 		internal const string LightName = "Claro";
 		internal const string DarkName = "Escuro";
 		internal const string DraculaName = "Dracula";
+		internal const string CatppuccinMochaName = "Catppuccin Mocha";
+		internal const string TokyoNightName = "Tokyo Night";
+		internal const string NordName = "Nord";
+		internal const string GruvboxDarkName = "Gruvbox Dark";
+		internal const string OneDarkProName = "One Dark Pro";
+		internal const string RosePineName = "Rosé Pine";
 
 		/// <summary>Abaixo disso (saturacao HSL) a cor conta como cinza e vai para a rampa.</summary>
 		internal const double GraySaturation = 0.2;
@@ -927,10 +966,198 @@ namespace GxPropertiesTool
 			}
 		}
 
+		/// <summary>Catppuccin Mocha (catppuccin/catppuccin, MIT): Base #1E1E2E, Surface0 #313244, Text #CDD6F4...</summary>
+		internal static ThemePalette CatppuccinMocha
+		{
+			get
+			{
+				Color baseBg = Hex("1E1E2E"), surface0 = Hex("313244"), surface1 = Hex("45475A"), overlay0 = Hex("6C7086"), text = Hex("CDD6F4");
+				return new ThemePalette
+				{
+					Name = CatppuccinMochaName,
+					Frame = Hex("11111B"),
+					Line = surface1,
+					Raised = surface0,
+					Hover = surface1,
+					RaisedText = text,
+					TextDim = overlay0,
+					Selection = surface1,
+					SelectionText = text,
+					Accent = Hex("CBA6F7"),
+					ScrollTrack = Hex("181825"),
+					ScrollThumb = surface1,
+					ScrollArrow = overlay0,
+					Text = text,
+					HtmlCss = "html,body{background-color:#1e1e2e;color:#cdd6f4;}a{color:#89b4fa;}"
+						+ "table,td,th{border-color:#45475a;}",
+					_ramp = new[] { Hex("11111B"), Hex("181825"), baseBg, surface0, surface1, overlay0, text },
+					_accents = new[] { Hex("89B4FA"), Hex("94E2D5"), Hex("A6E3A1"), Hex("F9E2AF"), Hex("FAB387"), Hex("F38BA8"), Hex("CBA6F7") },
+				};
+			}
+		}
+
+		/// <summary>Tokyo Night (folke/tokyonight.nvim, MIT): Bg #24283B, Highlight #292E42, Fg #C0CAF5...</summary>
+		internal static ThemePalette TokyoNight
+		{
+			get
+			{
+				Color bg = Hex("24283B"), highlight = Hex("292E42"), line = Hex("3B4261"), comment = Hex("565F89"), fg = Hex("C0CAF5");
+				return new ThemePalette
+				{
+					Name = TokyoNightName,
+					Frame = Hex("16161E"),
+					Line = line,
+					Raised = highlight,
+					Hover = line,
+					RaisedText = fg,
+					TextDim = comment,
+					Selection = Hex("283457"),
+					SelectionText = fg,
+					Accent = Hex("7AA2F7"),
+					ScrollTrack = Hex("1A1B26"),
+					ScrollThumb = line,
+					ScrollArrow = comment,
+					Text = fg,
+					HtmlCss = "html,body{background-color:#24283b;color:#c0caf5;}a{color:#7dcfff;}"
+						+ "table,td,th{border-color:#3b4261;}",
+					_ramp = new[] { Hex("16161E"), Hex("1A1B26"), bg, highlight, line, comment, fg },
+					_accents = new[] { Hex("7AA2F7"), Hex("7DCFFF"), Hex("9ECE6A"), Hex("E0AF68"), Hex("FF9E64"), Hex("F7768E"), Hex("BB9AF7") },
+				};
+			}
+		}
+
+		/// <summary>Nord (nordtheme/nord, MIT): Polar Night #2E3440..#4C566A, Snow Storm #ECEFF4, Frost #88C0D0...</summary>
+		internal static ThemePalette Nord
+		{
+			get
+			{
+				Color nord0 = Hex("2E3440"), nord1 = Hex("3B4252"), nord2 = Hex("434C5E"), nord3 = Hex("4C566A"), dim = Hex("7B88A1"), nord6 = Hex("ECEFF4");
+				return new ThemePalette
+				{
+					Name = NordName,
+					Frame = Hex("242933"),
+					Line = nord3,
+					Raised = nord2,
+					Hover = nord3,
+					RaisedText = nord6,
+					TextDim = dim,
+					Selection = nord2,
+					SelectionText = nord6,
+					Accent = Hex("88C0D0"),
+					ScrollTrack = nord0,
+					ScrollThumb = nord3,
+					ScrollArrow = dim,
+					Text = nord6,
+					HtmlCss = "html,body{background-color:#2e3440;color:#eceff4;}a{color:#88c0d0;}"
+						+ "table,td,th{border-color:#4c566a;}",
+					_ramp = new[] { Hex("242933"), nord0, nord1, nord2, nord3, dim, nord6 },
+					_accents = new[] { Hex("88C0D0"), Hex("81A1C1"), Hex("A3BE8C"), Hex("EBCB8B"), Hex("D08770"), Hex("BF616A"), Hex("B48EAD") },
+				};
+			}
+		}
+
+		/// <summary>Gruvbox Dark (morhetz/gruvbox, MIT): Dark0 #282828, Dark1 #3C3836, Dark2 #504945, Light1 #EBDBB2...</summary>
+		internal static ThemePalette GruvboxDark
+		{
+			get
+			{
+				Color dark0 = Hex("282828"), soft = Hex("32302F"), dark1 = Hex("3C3836"), dark2 = Hex("504945"), gray = Hex("928374"), light1 = Hex("EBDBB2");
+				return new ThemePalette
+				{
+					Name = GruvboxDarkName,
+					Frame = Hex("1D2021"),
+					Line = dark2,
+					Raised = dark1,
+					Hover = dark2,
+					RaisedText = light1,
+					TextDim = gray,
+					Selection = dark2,
+					SelectionText = light1,
+					Accent = Hex("FE8019"),
+					ScrollTrack = dark0,
+					ScrollThumb = dark2,
+					ScrollArrow = gray,
+					Text = light1,
+					HtmlCss = "html,body{background-color:#282828;color:#ebdbb2;}a{color:#83a598;}"
+						+ "table,td,th{border-color:#504945;}",
+					_ramp = new[] { Hex("1D2021"), dark0, soft, dark1, dark2, gray, light1 },
+					_accents = new[] { Hex("8EC07C"), Hex("B8BB26"), Hex("FABD2F"), Hex("FE8019"), Hex("FB4934"), Hex("D3869B"), Hex("83A598") },
+				};
+			}
+		}
+
+		/// <summary>One Dark Pro (binaryify/OneDark-Pro, MIT): Bg #282C34, Gutter #3E4451, Fg #ABB2BF...</summary>
+		internal static ThemePalette OneDarkPro
+		{
+			get
+			{
+				Color uiBg = Hex("21252B"), bg = Hex("282C34"), raised = Hex("323842"), line = Hex("3E4451"), comment = Hex("5C6370"), fg = Hex("ABB2BF");
+				return new ThemePalette
+				{
+					Name = OneDarkProName,
+					Frame = Hex("1E2227"),
+					Line = line,
+					Raised = raised,
+					Hover = line,
+					RaisedText = fg,
+					TextDim = comment,
+					Selection = line,
+					SelectionText = fg,
+					Accent = Hex("61AFEF"),
+					ScrollTrack = uiBg,
+					ScrollThumb = line,
+					ScrollArrow = comment,
+					Text = fg,
+					HtmlCss = "html,body{background-color:#282c34;color:#abb2bf;}a{color:#61afef;}"
+						+ "table,td,th{border-color:#3e4451;}",
+					_ramp = new[] { Hex("1E2227"), uiBg, bg, raised, line, comment, fg },
+					_accents = new[] { Hex("56B6C2"), Hex("61AFEF"), Hex("98C379"), Hex("E5C07B"), Hex("D19A66"), Hex("E06C75"), Hex("C678DD") },
+				};
+			}
+		}
+
+		/// <summary>Rosé Pine (rose-pine/rose-pine-theme, MIT): Base #191724, Surface #1F1D2E, Overlay #26233A, Text #E0DEF4...</summary>
+		internal static ThemePalette RosePine
+		{
+			get
+			{
+				Color baseBg = Hex("191724"), surface = Hex("1F1D2E"), overlay = Hex("26233A"), med = Hex("312F44"), high = Hex("403D52"), muted = Hex("6E6A86"), text = Hex("E0DEF4");
+				return new ThemePalette
+				{
+					Name = RosePineName,
+					Frame = baseBg,
+					Line = high,
+					Raised = med,
+					Hover = high,
+					RaisedText = text,
+					TextDim = muted,
+					Selection = high,
+					SelectionText = text,
+					Accent = Hex("C4A7E7"),
+					ScrollTrack = surface,
+					ScrollThumb = high,
+					ScrollArrow = muted,
+					Text = text,
+					HtmlCss = "html,body{background-color:#191724;color:#e0def4;}a{color:#9ccfd8;}"
+						+ "table,td,th{border-color:#403d52;}",
+					_ramp = new[] { baseBg, surface, overlay, med, high, muted, text },
+					_accents = new[] { Hex("9CCFD8"), Hex("31748F"), Hex("F6C177"), Hex("EBBCBA"), Hex("EB6F92"), Hex("C4A7E7"), Hex("908CAA") },
+				};
+			}
+		}
+
 		/// <summary>Paleta pelo nome gravado (vazio/desconhecido = Escuro: o arquivo antigo guardava so a data).</summary>
 		internal static ThemePalette ByName(string name)
 		{
-			return string.Equals((name ?? "").Trim(), DraculaName, StringComparison.OrdinalIgnoreCase) ? Dracula : Dark;
+			string n = (name ?? "").Trim();
+			if (string.Equals(n, DraculaName, StringComparison.OrdinalIgnoreCase)) return Dracula;
+			if (string.Equals(n, CatppuccinMochaName, StringComparison.OrdinalIgnoreCase)) return CatppuccinMocha;
+			if (string.Equals(n, TokyoNightName, StringComparison.OrdinalIgnoreCase)) return TokyoNight;
+			if (string.Equals(n, NordName, StringComparison.OrdinalIgnoreCase)) return Nord;
+			if (string.Equals(n, GruvboxDarkName, StringComparison.OrdinalIgnoreCase)) return GruvboxDark;
+			if (string.Equals(n, OneDarkProName, StringComparison.OrdinalIgnoreCase)) return OneDarkPro;
+			if (string.Equals(n, RosePineName, StringComparison.OrdinalIgnoreCase) || string.Equals(n, "Rose Pine", StringComparison.OrdinalIgnoreCase)) return RosePine;
+			return Dark;
 		}
 
 		/// <summary>
@@ -5149,10 +5376,23 @@ namespace GxPropertiesTool.Tests
 		{
 			Assert.Equal(ThemePalette.DraculaName, ThemePalette.ByName("Dracula").Name);
 			Assert.Equal(ThemePalette.DraculaName, ThemePalette.ByName(" dracula " + Environment.NewLine).Name);
+			Assert.Equal(ThemePalette.CatppuccinMochaName, ThemePalette.ByName("Catppuccin Mocha").Name);
+			Assert.Equal(ThemePalette.TokyoNightName, ThemePalette.ByName("Tokyo Night").Name);
+			Assert.Equal(ThemePalette.NordName, ThemePalette.ByName("Nord").Name);
+			Assert.Equal(ThemePalette.GruvboxDarkName, ThemePalette.ByName("Gruvbox Dark").Name);
+			Assert.Equal(ThemePalette.OneDarkProName, ThemePalette.ByName("One Dark Pro").Name);
+			Assert.Equal(ThemePalette.RosePineName, ThemePalette.ByName("Rosé Pine").Name);
+			Assert.Equal(ThemePalette.RosePineName, ThemePalette.ByName("Rose Pine").Name);
 			Assert.Equal(ThemePalette.DarkName, ThemePalette.ByName("conteudo-desconhecido").Name); // conteudo fora da lista = Escuro
 			Assert.Equal(ThemePalette.DarkName, ThemePalette.ByName(null).Name);
 			Assert.False(ThemePalette.Dark.Tinted);
 			Assert.True(ThemePalette.Dracula.Tinted);
+			Assert.True(ThemePalette.CatppuccinMocha.Tinted);
+			Assert.True(ThemePalette.TokyoNight.Tinted);
+			Assert.True(ThemePalette.Nord.Tinted);
+			Assert.True(ThemePalette.GruvboxDark.Tinted);
+			Assert.True(ThemePalette.OneDarkPro.Tinted);
+			Assert.True(ThemePalette.RosePine.Tinted);
 		}
 
 		[Fact]

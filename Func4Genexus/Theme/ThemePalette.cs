@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Globalization;
 
@@ -7,7 +7,7 @@ namespace Func4Genexus.Theme
 	/// <summary>
 	/// Paleta de um tema escuro: cor por PAPEL (moldura, traco, selecao, barra de rolagem...) e a regra que leva as cores
 	/// claras do GeneXus para o tema. PURA e imutavel. Escuro = a formula de sempre (inverte a luminosidade e mantem o
-	/// matiz; saida identica a de antes da paleta - teste). Dracula = mesma luminosidade, mas o cinza vira um ponto da
+	/// matiz; saida identica a de antes da paleta - teste). Dracula e demais temas = mesma luminosidade, mas o cinza vira um ponto da
 	/// rampa de fundos da paleta e a cor com matiz vira o destaque mais proximo. Ver secao 4 do guia.
 	/// </summary>
 	internal sealed class ThemePalette
@@ -15,6 +15,12 @@ namespace Func4Genexus.Theme
 		internal const string LightName = "Claro";
 		internal const string DarkName = "Escuro";
 		internal const string DraculaName = "Dracula";
+		internal const string CatppuccinMochaName = "Catppuccin Mocha";
+		internal const string TokyoNightName = "Tokyo Night";
+		internal const string NordName = "Nord";
+		internal const string GruvboxDarkName = "Gruvbox Dark";
+		internal const string OneDarkProName = "One Dark Pro";
+		internal const string RosePineName = "Rosé Pine";
 
 		/// <summary>Abaixo disso (saturacao HSL) a cor conta como cinza e vai para a rampa.</summary>
 		internal const double GraySaturation = 0.2;
@@ -101,10 +107,198 @@ namespace Func4Genexus.Theme
 			}
 		}
 
+		/// <summary>Catppuccin Mocha (catppuccin/catppuccin, MIT): Base #1E1E2E, Surface0 #313244, Text #CDD6F4...</summary>
+		internal static ThemePalette CatppuccinMocha
+		{
+			get
+			{
+				Color baseBg = Hex("1E1E2E"), surface0 = Hex("313244"), surface1 = Hex("45475A"), overlay0 = Hex("6C7086"), text = Hex("CDD6F4");
+				return new ThemePalette
+				{
+					Name = CatppuccinMochaName,
+					Frame = Hex("11111B"),
+					Line = surface1,
+					Raised = surface0,
+					Hover = surface1,
+					RaisedText = text,
+					TextDim = overlay0,
+					Selection = surface1,
+					SelectionText = text,
+					Accent = Hex("CBA6F7"),
+					ScrollTrack = Hex("181825"),
+					ScrollThumb = surface1,
+					ScrollArrow = overlay0,
+					Text = text,
+					HtmlCss = "html,body{background-color:#1e1e2e;color:#cdd6f4;}a{color:#89b4fa;}"
+						+ "table,td,th{border-color:#45475a;}",
+					_ramp = new[] { Hex("11111B"), Hex("181825"), baseBg, surface0, surface1, overlay0, text },
+					_accents = new[] { Hex("89B4FA"), Hex("94E2D5"), Hex("A6E3A1"), Hex("F9E2AF"), Hex("FAB387"), Hex("F38BA8"), Hex("CBA6F7") },
+				};
+			}
+		}
+
+		/// <summary>Tokyo Night (folke/tokyonight.nvim, MIT): Bg #24283B, Highlight #292E42, Fg #C0CAF5...</summary>
+		internal static ThemePalette TokyoNight
+		{
+			get
+			{
+				Color bg = Hex("24283B"), highlight = Hex("292E42"), line = Hex("3B4261"), comment = Hex("565F89"), fg = Hex("C0CAF5");
+				return new ThemePalette
+				{
+					Name = TokyoNightName,
+					Frame = Hex("16161E"),
+					Line = line,
+					Raised = highlight,
+					Hover = line,
+					RaisedText = fg,
+					TextDim = comment,
+					Selection = Hex("283457"),
+					SelectionText = fg,
+					Accent = Hex("7AA2F7"),
+					ScrollTrack = Hex("1A1B26"),
+					ScrollThumb = line,
+					ScrollArrow = comment,
+					Text = fg,
+					HtmlCss = "html,body{background-color:#24283b;color:#c0caf5;}a{color:#7dcfff;}"
+						+ "table,td,th{border-color:#3b4261;}",
+					_ramp = new[] { Hex("16161E"), Hex("1A1B26"), bg, highlight, line, comment, fg },
+					_accents = new[] { Hex("7AA2F7"), Hex("7DCFFF"), Hex("9ECE6A"), Hex("E0AF68"), Hex("FF9E64"), Hex("F7768E"), Hex("BB9AF7") },
+				};
+			}
+		}
+
+		/// <summary>Nord (nordtheme/nord, MIT): Polar Night #2E3440..#4C566A, Snow Storm #ECEFF4, Frost #88C0D0...</summary>
+		internal static ThemePalette Nord
+		{
+			get
+			{
+				Color nord0 = Hex("2E3440"), nord1 = Hex("3B4252"), nord2 = Hex("434C5E"), nord3 = Hex("4C566A"), dim = Hex("7B88A1"), nord6 = Hex("ECEFF4");
+				return new ThemePalette
+				{
+					Name = NordName,
+					Frame = Hex("242933"),
+					Line = nord3,
+					Raised = nord2,
+					Hover = nord3,
+					RaisedText = nord6,
+					TextDim = dim,
+					Selection = nord2,
+					SelectionText = nord6,
+					Accent = Hex("88C0D0"),
+					ScrollTrack = nord0,
+					ScrollThumb = nord3,
+					ScrollArrow = dim,
+					Text = nord6,
+					HtmlCss = "html,body{background-color:#2e3440;color:#eceff4;}a{color:#88c0d0;}"
+						+ "table,td,th{border-color:#4c566a;}",
+					_ramp = new[] { Hex("242933"), nord0, nord1, nord2, nord3, dim, nord6 },
+					_accents = new[] { Hex("88C0D0"), Hex("81A1C1"), Hex("A3BE8C"), Hex("EBCB8B"), Hex("D08770"), Hex("BF616A"), Hex("B48EAD") },
+				};
+			}
+		}
+
+		/// <summary>Gruvbox Dark (morhetz/gruvbox, MIT): Dark0 #282828, Dark1 #3C3836, Dark2 #504945, Light1 #EBDBB2...</summary>
+		internal static ThemePalette GruvboxDark
+		{
+			get
+			{
+				Color dark0 = Hex("282828"), soft = Hex("32302F"), dark1 = Hex("3C3836"), dark2 = Hex("504945"), gray = Hex("928374"), light1 = Hex("EBDBB2");
+				return new ThemePalette
+				{
+					Name = GruvboxDarkName,
+					Frame = Hex("1D2021"),
+					Line = dark2,
+					Raised = dark1,
+					Hover = dark2,
+					RaisedText = light1,
+					TextDim = gray,
+					Selection = dark2,
+					SelectionText = light1,
+					Accent = Hex("FE8019"),
+					ScrollTrack = dark0,
+					ScrollThumb = dark2,
+					ScrollArrow = gray,
+					Text = light1,
+					HtmlCss = "html,body{background-color:#282828;color:#ebdbb2;}a{color:#83a598;}"
+						+ "table,td,th{border-color:#504945;}",
+					_ramp = new[] { Hex("1D2021"), dark0, soft, dark1, dark2, gray, light1 },
+					_accents = new[] { Hex("8EC07C"), Hex("B8BB26"), Hex("FABD2F"), Hex("FE8019"), Hex("FB4934"), Hex("D3869B"), Hex("83A598") },
+				};
+			}
+		}
+
+		/// <summary>One Dark Pro (binaryify/OneDark-Pro, MIT): Bg #282C34, Gutter #3E4451, Fg #ABB2BF...</summary>
+		internal static ThemePalette OneDarkPro
+		{
+			get
+			{
+				Color uiBg = Hex("21252B"), bg = Hex("282C34"), raised = Hex("323842"), line = Hex("3E4451"), comment = Hex("5C6370"), fg = Hex("ABB2BF");
+				return new ThemePalette
+				{
+					Name = OneDarkProName,
+					Frame = Hex("1E2227"),
+					Line = line,
+					Raised = raised,
+					Hover = line,
+					RaisedText = fg,
+					TextDim = comment,
+					Selection = line,
+					SelectionText = fg,
+					Accent = Hex("61AFEF"),
+					ScrollTrack = uiBg,
+					ScrollThumb = line,
+					ScrollArrow = comment,
+					Text = fg,
+					HtmlCss = "html,body{background-color:#282c34;color:#abb2bf;}a{color:#61afef;}"
+						+ "table,td,th{border-color:#3e4451;}",
+					_ramp = new[] { Hex("1E2227"), uiBg, bg, raised, line, comment, fg },
+					_accents = new[] { Hex("56B6C2"), Hex("61AFEF"), Hex("98C379"), Hex("E5C07B"), Hex("D19A66"), Hex("E06C75"), Hex("C678DD") },
+				};
+			}
+		}
+
+		/// <summary>Rosé Pine (rose-pine/rose-pine-theme, MIT): Base #191724, Surface #1F1D2E, Overlay #26233A, Text #E0DEF4...</summary>
+		internal static ThemePalette RosePine
+		{
+			get
+			{
+				Color baseBg = Hex("191724"), surface = Hex("1F1D2E"), overlay = Hex("26233A"), med = Hex("312F44"), high = Hex("403D52"), muted = Hex("6E6A86"), text = Hex("E0DEF4");
+				return new ThemePalette
+				{
+					Name = RosePineName,
+					Frame = baseBg,
+					Line = high,
+					Raised = med,
+					Hover = high,
+					RaisedText = text,
+					TextDim = muted,
+					Selection = high,
+					SelectionText = text,
+					Accent = Hex("C4A7E7"),
+					ScrollTrack = surface,
+					ScrollThumb = high,
+					ScrollArrow = muted,
+					Text = text,
+					HtmlCss = "html,body{background-color:#191724;color:#e0def4;}a{color:#9ccfd8;}"
+						+ "table,td,th{border-color:#403d52;}",
+					_ramp = new[] { baseBg, surface, overlay, med, high, muted, text },
+					_accents = new[] { Hex("9CCFD8"), Hex("31748F"), Hex("F6C177"), Hex("EBBCBA"), Hex("EB6F92"), Hex("C4A7E7"), Hex("908CAA") },
+				};
+			}
+		}
+
 		/// <summary>Paleta pelo nome gravado (vazio/desconhecido = Escuro: o arquivo antigo guardava so a data).</summary>
 		internal static ThemePalette ByName(string name)
 		{
-			return string.Equals((name ?? "").Trim(), DraculaName, StringComparison.OrdinalIgnoreCase) ? Dracula : Dark;
+			string n = (name ?? "").Trim();
+			if (string.Equals(n, DraculaName, StringComparison.OrdinalIgnoreCase)) return Dracula;
+			if (string.Equals(n, CatppuccinMochaName, StringComparison.OrdinalIgnoreCase)) return CatppuccinMocha;
+			if (string.Equals(n, TokyoNightName, StringComparison.OrdinalIgnoreCase)) return TokyoNight;
+			if (string.Equals(n, NordName, StringComparison.OrdinalIgnoreCase)) return Nord;
+			if (string.Equals(n, GruvboxDarkName, StringComparison.OrdinalIgnoreCase)) return GruvboxDark;
+			if (string.Equals(n, OneDarkProName, StringComparison.OrdinalIgnoreCase)) return OneDarkPro;
+			if (string.Equals(n, RosePineName, StringComparison.OrdinalIgnoreCase) || string.Equals(n, "Rose Pine", StringComparison.OrdinalIgnoreCase)) return RosePine;
+			return Dark;
 		}
 
 		/// <summary>

@@ -18,6 +18,12 @@
     <CommandDefinition id="ThemeLight" text="Tema: Claro" />
     <CommandDefinition id="ThemeDark" text="Tema: Escuro" />
     <CommandDefinition id="ThemeDracula" text="Tema: Dracula" />
+    <CommandDefinition id="ThemeCatppuccinMocha" text="Tema: Catppuccin Mocha" />
+    <CommandDefinition id="ThemeTokyoNight" text="Tema: Tokyo Night" />
+    <CommandDefinition id="ThemeNord" text="Tema: Nord" />
+    <CommandDefinition id="ThemeGruvboxDark" text="Tema: Gruvbox Dark" />
+    <CommandDefinition id="ThemeOneDarkPro" text="Tema: One Dark Pro" />
+    <CommandDefinition id="ThemeRosePine" text="Tema: Rosé Pine" />
     <CommandDefinition id="InspectDarkMode" text="Tema escuro: inspecionar controles" />
     <CommandDefinition id="InspectDarkModeLater" text="Tema escuro: inspecionar em 10 s (diálogos)" />
     <CommandDefinition id="InspectDarkModePoint" text="Tema escuro: o que está sob o mouse (em 5 s)" />
@@ -34,6 +40,12 @@
       <Command refid="ThemeLight" />
       <Command refid="ThemeDark" />
       <Command refid="ThemeDracula" />
+      <Command refid="ThemeCatppuccinMocha" />
+      <Command refid="ThemeTokyoNight" />
+      <Command refid="ThemeNord" />
+      <Command refid="ThemeGruvboxDark" />
+      <Command refid="ThemeOneDarkPro" />
+      <Command refid="ThemeRosePine" />
     </Group>
     <Group id="Func4GenexusThemeDiagGroup">
       <Command refid="InspectDarkMode" />

@@ -38,20 +38,15 @@ namespace Func4Genexus
                 ExecuteAbout,
                 QueryAbout);
 
-            AddCommand(
-                new CommandKey(Id, "ThemeLight"),
-                delegate { DarkModeService.SetTheme(ThemePalette.LightName); return true; },
-                QueryTheme("Tema: Claro", () => DarkModeService.CurrentTheme == ThemePalette.LightName));
-
-            AddCommand(
-                new CommandKey(Id, "ThemeDark"),
-                delegate { DarkModeService.SetTheme(ThemePalette.DarkName); return true; },
-                QueryTheme("Tema: Escuro", () => DarkModeService.CurrentTheme == ThemePalette.DarkName));
-
-            AddCommand(
-                new CommandKey(Id, "ThemeDracula"),
-                delegate { DarkModeService.SetTheme(ThemePalette.DraculaName); return true; },
-                QueryTheme("Tema: Dracula", () => DarkModeService.CurrentTheme == ThemePalette.DraculaName));
+            RegisterThemeCommand("ThemeLight", ThemePalette.LightName);
+            RegisterThemeCommand("ThemeDark", ThemePalette.DarkName);
+            RegisterThemeCommand("ThemeDracula", ThemePalette.DraculaName);
+            RegisterThemeCommand("ThemeCatppuccinMocha", ThemePalette.CatppuccinMochaName);
+            RegisterThemeCommand("ThemeTokyoNight", ThemePalette.TokyoNightName);
+            RegisterThemeCommand("ThemeNord", ThemePalette.NordName);
+            RegisterThemeCommand("ThemeGruvboxDark", ThemePalette.GruvboxDarkName);
+            RegisterThemeCommand("ThemeOneDarkPro", ThemePalette.OneDarkProName);
+            RegisterThemeCommand("ThemeRosePine", ThemePalette.RosePineName);
 
             AddCommand(
                 new CommandKey(Id, "InspectDarkMode"),
@@ -78,6 +73,14 @@ namespace Func4Genexus
 
             // Verifica se há novas versões disponíveis no GitHub em segundo plano
             Func4Genexus.Services.UpdateCheckerService.CheckForUpdatesInBackground();
+        }
+
+        private void RegisterThemeCommand(string commandId, string themeName)
+        {
+            AddCommand(
+                new CommandKey(Id, commandId),
+                delegate { DarkModeService.SetTheme(themeName); return true; },
+                QueryTheme("Tema: " + themeName, () => string.Equals(DarkModeService.CurrentTheme, themeName, StringComparison.OrdinalIgnoreCase)));
         }
 
         private static QueryHandler QuerySimple(string text)
