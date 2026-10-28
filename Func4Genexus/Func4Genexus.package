@@ -34,7 +34,6 @@
     </Group>
     <Group id="Func4GenexusMainMenuGroup">
       <Command refid="Gerar ou Gerenciar SDT" />
-      <Command refid="Sobre o Func4Genexus" />
     </Group>
     <Group id="Func4GenexusThemeGroup">
       <Command refid="ThemeLight" />
@@ -52,6 +51,20 @@
       <Command refid="InspectDarkModeLater" />
       <Command refid="InspectDarkModePoint" />
     </Group>
+    <Group id="Func4GenexusThemeDiagMenuGroup">
+      <Popup id="Func4GenexusThemeDiagPopup" name="Diagnóstico">
+        <Group refid="Func4GenexusThemeDiagGroup" />
+      </Popup>
+    </Group>
+    <Group id="Func4GenexusThemeMenuGroup">
+      <Popup id="Func4GenexusThemePopup" name="Tema">
+        <Group refid="Func4GenexusThemeGroup" />
+        <Group refid="Func4GenexusThemeDiagMenuGroup" />
+      </Popup>
+    </Group>
+    <Group id="Func4GenexusAboutMenuGroup">
+      <Command refid="Sobre o Func4Genexus" />
+    </Group>
     <Group refid="KBObjectGrp" package="98121D96-A7D8-468b-9310-B1F468F812AE">
       <Popup id="Func4GenexusContextPopup" name="Func4Genexus">
         <Group refid="Func4GenexusContextMenuGroup" />
@@ -62,12 +75,8 @@
     <Menu type="menubar">
       <Popup id="Func4GenexusMainMenuPopup" name="Func4Genexus" insertBefore="Help">
         <Group refid="Func4GenexusMainMenuGroup" />
-        <Popup id="Func4GenexusThemePopup" name="Tema">
-          <Group refid="Func4GenexusThemeGroup" />
-          <Popup id="Func4GenexusThemeDiagPopup" name="Diagnóstico">
-            <Group refid="Func4GenexusThemeDiagGroup" />
-          </Popup>
-        </Popup>
+        <Group refid="Func4GenexusThemeMenuGroup" />
+        <Group refid="Func4GenexusAboutMenuGroup" />
       </Popup>
     </Menu>
   </Menus>

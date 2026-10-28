@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-    Script de build para testes locais do Func4Genexus (GeneXus 18 Legado e U14+).
+    Script de build para testes locais e release do Func4Genexus (GeneXus 18 Legado e U14+).
 
 .DESCRIPTION
     1. Compila a versao LEGADA (GX18 U1 ao U13) -> Func4Genexus_GX18_U1_to_U13.dll
     2. Compila a versao U14+ (GX18 U14 ou superior) -> Func4Genexus_GX18_U14plus.dll
-    3. Copia as DLLs e catalogs diretamente para as pastas dentro de dist/ para teste local (sem compactar em zip).
+    3. Copia as DLLs e catalogs para dist/ e gera os arquivos .zip de release.
 #>
 
 [CmdletBinding()]
@@ -21,7 +21,7 @@ $FuncDir = Join-Path $RootDir "Func4Genexus"
 $DistDir = Join-Path $RootDir "dist"
 
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "       Func4Genexus - Build Local para Testes             " -ForegroundColor Cyan
+Write-Host "       Func4Genexus - Build Local e Pacotes de Release     " -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 
 # 1. Compilação Legada
@@ -44,8 +44,8 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host "  -> Compilacao U14+ concluida com sucesso!" -ForegroundColor Green
 
-# 3. Organização na pasta dist (apenas arquivos descompactados para teste local)
-Write-Host "`nOrganizando arquivos na pasta dist/ para testes locais..." -ForegroundColor Yellow
+# 3. Organização na pasta dist
+Write-Host "`nOrganizando arquivos na pasta dist/ e gerando .zip de release..." -ForegroundColor Yellow
 
 $pkgLegacyDir = Join-Path $DistDir "Func4Genexus_GX18_U1_to_U13"
 $pkgU14Dir    = Join-Path $DistDir "Func4Genexus_GX18_U14plus"
@@ -65,9 +65,17 @@ $u14Catalog = Join-Path $FuncDir "Func4Genexus_U14.catalog"
 Copy-Item $u14Dll -Destination (Join-Path $pkgU14Dir "Func4Genexus_GX18_U14plus.dll") -Force
 Copy-Item $u14Catalog -Destination (Join-Path $pkgU14Dir "Func4Genexus_U14.catalog") -Force
 
+# 4. Geração dos arquivos compactados (.zip) para upload no GitHub
+Compress-Archive -Path "$pkgLegacyDir\*" -DestinationPath (Join-Path $DistDir "Func4Genexus_GX18_U1_to_U13.zip") -Force
+Compress-Archive -Path "$pkgU14Dir\*" -DestinationPath (Join-Path $DistDir "Func4Genexus_GX18_U14plus.zip") -Force
+
 Write-Host "==========================================================" -ForegroundColor Green
-Write-Host "         BUILD CONCLUIDO PARA TESTES LOCAIS!              " -ForegroundColor Green
+Write-Host "         BUILD E PACOTES .ZIP CONCLUIDOS!                 " -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
+Write-Host "`nPacotes .zip prontos para Release no GitHub:" -ForegroundColor Cyan
+Write-Host "  • $(Join-Path $DistDir 'Func4Genexus_GX18_U1_to_U13.zip')" -ForegroundColor White
+Write-Host "  • $(Join-Path $DistDir 'Func4Genexus_GX18_U14plus.zip')" -ForegroundColor White
+
 Write-Host "`nArquivos prontos para copiar para a pasta Packages do seu GeneXus:" -ForegroundColor Cyan
 Write-Host "  1. GX18 U1 ao U13 : $pkgLegacyDir" -ForegroundColor White
 Write-Host "  2. GX18 U14+      : $pkgU14Dir" -ForegroundColor White

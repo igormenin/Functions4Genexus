@@ -10,7 +10,7 @@ namespace Func4Genexus.UI
         public UpdateNotificationForm(string currentVersion, string latestVersion, string environmentName, string recommendedZip, string releaseUrl)
         {
             this.Text = "Atualização Disponível - Func4Genexus";
-            this.Size = new Size(460, 260);
+            this.Size = new Size(500, 310);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -23,32 +23,32 @@ namespace Func4Genexus.UI
                 Font = new Font("Segoe UI", 12f, FontStyle.Bold),
                 Left = 20,
                 Top = 18,
-                Width = 410,
+                Width = 450,
                 Height = 28
             };
 
             var lblDetails = new Label
             {
-                Text = $"Uma nova versão foi publicada no GitHub:\n" +
+                Text = $"Uma nova versão foi publicada no GitHub:\n\n" +
                        $"• Versão instalada: v{currentVersion}\n" +
                        $"• Versão mais recente: v{latestVersion}\n\n" +
-                       $"Para o seu ambiente ({environmentName}), o arquivo a ser baixado é:\n" +
-                       $"👉 {recommendedZip}",
+                       $"Para o seu ambiente ({environmentName}), baixe o arquivo:\n" +
+                       $"👉  {recommendedZip}",
                 Font = new Font("Segoe UI", 9.5f),
                 Left = 20,
                 Top = 52,
-                Width = 410,
-                Height = 110
+                Width = 450,
+                Height = 150
             };
 
             var btnGoToSite = new Button
             {
                 Text = "Ir para o site",
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                Left = 195,
-                Top = 175,
+                Left = 230,
+                Top = 220,
                 Width = 140,
-                Height = 32,
+                Height = 34,
                 BackColor = Color.FromArgb(0, 120, 215),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat
@@ -79,10 +79,10 @@ namespace Func4Genexus.UI
             {
                 Text = "OK",
                 Font = new Font("Segoe UI", 9f),
-                Left = 345,
-                Top = 175,
+                Left = 380,
+                Top = 220,
                 Width = 85,
-                Height = 32,
+                Height = 34,
                 DialogResult = DialogResult.OK
             };
             btnOk.Click += (s, e) => this.Close();
